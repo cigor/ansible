@@ -94,6 +94,18 @@ else:
 # MySQL module specific support methods.
 #
 
+def mysql_pw(user, password):
+    """
+    >>> mysql_pw("root", "")
+    "-u'root'"
+    >>> mysql_pw("root", "w")
+    "-u'root' -p'w'"
+    """
+    if password:
+        return "-u'%s' -p'%s'" % (user, password)
+    else:
+        return "-u'%s'" % (user,)
+
 def db_exists(cursor, db):
     res = cursor.execute("SHOW DATABASES LIKE %s", (db,))
     return bool(res)
@@ -104,14 +116,14 @@ def db_delete(cursor, db):
     return True
 
 def db_dump(user, password, db_name, target):
-    res = os.system("/usr/bin/mysqldump -q -u "+user+ " -p"+password+" "
-            +db_name+" > "
+    res = os.system("/usr/bin/mysqldump -q " + mysql_pw(user, password) + " " +
+            db_name+" > "
             +target)
     return (res == 0)
 
 def db_import(user, password, db_name, target):
-    res = os.system("/usr/bin/mysql -u "+user+ " -p"+password+" "
-            +db_name+" < "
+    res = os.system("/usr/bin/mysql " + mysql_pw(user, password) + " " +
+            db_name+" < "
             +target)
     return (res == 0)
 
